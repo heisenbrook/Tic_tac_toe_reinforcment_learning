@@ -1,4 +1,6 @@
-from utils.board import print_board, check_triplets
+# play_h_vs_h.py
+
+from src.board import print_board, check_triplets
 
 def action_h(turn, positions):
     while True:

@@ -1,10 +1,12 @@
+# play_random.py
+
 import random
 from tqdm import tqdm
 import numpy as np
 from collections import deque
-from utils.board import check_triplets
-from utils.Q_player import update_q_table, sel_e_greedy_action
-from utils.DQN_player import select_action, update_model
+from src.board import check_triplets
+from agents.Q_player import update_q_table, sel_e_greedy_action
+from agents.DQN_player import select_action, update_model, hard_update_target
 
 Q1 = {}
 memory = deque(maxlen=10000000)
@@ -51,17 +53,20 @@ def play_r():
         if check_triplets(positions) == True and turn == 2:
             p1_win +=1
             update_q_table(Q1, cur_pos, action, 2, positions)
-            positions = np.zeros(9)
+            # Reset in-place 
+            positions[:] = 0
             
         elif check_triplets(positions) == 'Tie':
             p_tie +=1
             update_q_table(Q1, cur_pos, action, 1, positions)
-            positions = np.zeros(9)
+            # Reset in-place 
+            positions[:] = 0
             
         else:
             p2_win +=1
             update_q_table(Q1, cur_pos, action, -2, positions)
-            positions = np.zeros(9)
+            # Reset in-place 
+            positions[:] = 0
             
         
     print('------------------')              
@@ -121,7 +126,8 @@ def play_r_dqn():
             if len(memory) > batch_size:
                 update_model(memory, batch_size)
                 epsilon *= 0.95
-            positions = np.zeros(9)
+            # Reset in-place 
+            positions[:] = 0
             
         elif check_triplets(positions) == 'Tie':
             p_tie +=1
@@ -129,7 +135,8 @@ def play_r_dqn():
             if len(memory) > batch_size:
                 update_model(memory, batch_size)
                 epsilon *= 0.95
-            positions = np.zeros(9)
+            # Reset in-place 
+            positions[:] = 0
             
         else:
             p2_win +=1
@@ -137,12 +144,14 @@ def play_r_dqn():
             if len(memory) > batch_size:
                 update_model(memory, batch_size)
                 epsilon *= 0.95
-            positions = np.zeros(9)
+            # Reset in-place 
+            positions[:] = 0
+
+        # Update target network every 500 episodes
+        if p_tot % 500 == 0:
+            hard_update_target()
             
         
     print('------------------')              
     print('Training random finished!')  
     print(f'player1 wins {((p1_win/p_tot)*100):.2f} | player2 wins {((p2_win/p_tot)*100):.2f} | tie {((p_tie/p_tot)*100):.2f}')    
-    
-
-

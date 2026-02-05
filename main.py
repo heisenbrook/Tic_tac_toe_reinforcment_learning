@@ -1,7 +1,9 @@
+#main.py
+
 import torch
-from utils.play_to_train import play, play_dqn
-from utils.play_random import play_r, play_r_dqn
-from utils.play_h_vs_bot import play_h_vs_q, play_vs_dqn 
+from training.play_to_train import play_dqn
+from training.play_random import play_r_dqn
+from agents.human_vs_bot import play_vs_dqn 
 
 
 if torch.cuda.is_available():

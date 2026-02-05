@@ -1,8 +1,10 @@
+# play_h_vs_bot.py
+
 import numpy as np
-from utils.board import print_board, check_triplets
-from utils.Q_player import sel_e_greedy_action
-from utils.play_random import Q1
-from utils.DQN_player import select_action
+from src.board import print_board, check_triplets
+from agents.Q_player import sel_e_greedy_action
+from training.play_random import Q1
+from agents.DQN_player import select_action
 
 def act_q(Q, turn, positions):
     while True:
