@@ -38,7 +38,7 @@ tic_tac_toe_rl/
 
 ```
 
-# High‑level design
+### High‑level design
 
 
 *State*: 
@@ -77,4 +77,18 @@ human_vs_bot.py: CLI loop to play human vs Q‑table or DQN.
 *Game rules*:
 ```
 board.py: Prints the board and checks win/tie.
+```
+
+## How to use main.py - locally
+### Train models (pick any):
+```shell
+python main.py train_q_random
+python main.py train_q_self
+python main.py train_dqn_random
+python main.py train_dqn_self
+```
+### Server the web UI:
+```shell
+python main.py server
+# → http://localhost:5000
 ```
