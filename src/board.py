@@ -1,5 +1,15 @@
 # board.py
 
+"""
+This module defines the game board for Tic Tac Toe, 
+including functions to print the board state and check for winning conditions.
+The board is represented as a list of 9 elements,
+where each element can be 0 (empty), 1 (player 1), or 2 (player 2). 
+The check_triplets function evaluates the board state to determine 
+if there is a winner or if the game has ended in a tie.
+"""
+
+#import necessary libraries
 import numpy as np
     
 def print_board(positions):
