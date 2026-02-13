@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.logs/
+logs/
+artifacts/*.pth
+artifacts/*.pt
+.venv/
+env/
+venv/
+dist/
+build/
