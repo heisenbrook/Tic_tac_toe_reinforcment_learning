@@ -30,9 +30,8 @@ tic_tac_toe_rl/
 │   └── utils/
 │       └── (auxiliary utilities)
 │
-├── experiments/
-│   ├── logs/                    # Training logs
-│   └── artifacts/               # Saved models / Q-tables
+├──  logs/                    # Training logs
+├─ artifacts/               # Saved models / Q-tables
 │
 ├── requirements.txt
 └── README.md
