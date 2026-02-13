@@ -1,3 +1,4 @@
 tqdm==4.67.3
 torch==2.10.0
 numpy==2.4.2
+Flask==2.3.2

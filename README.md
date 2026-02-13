@@ -30,11 +30,65 @@ tic_tac_toe_rl/
 │   └── utils/
 │       └── (auxiliary utilities)
 │
-├── experiments/
-│   ├── logs/                    # Training logs
-│   └── artifacts/               # Saved models / Q-tables
+├──  logs/                    # Training logs
+├─ artifacts/               # Saved models / Q-tables
 │
 ├── requirements.txt
 └── README.md
 
+```
+
+### High‑level design
+
+
+*State*: 
+```
+A flat vector of 9 cells [0..8]. 0=empty, 1=X (player 1), 2=O (player 2).
+```
+
+*Actions*: 
+```
+Indices 0..8 where the agent plays if the spot is empty.
+```
+
+*Agents*:
+```
+
+1. Q‑Learning (tabular): Dictionary Q1 maps a stringified state to a vector of 9 Q‑values. Trained via self‑play or vs random. 
+
+2. DQN (PyTorch): A small MLP (9 → 200 → 200 → 9) producing Q‑values for each action. Uses a target network and experience replay.
+```
+
+
+*Training Loops*:
+```
+1. play_random.py: Train vs a random opponent (both Q‑table and DQN variants).
+
+2. play_to_train.py: Self‑play training (Q‑table and DQN variants).
+```
+
+
+*Interaction*:
+```
+human_vs_bot.py: CLI loop to play human vs Q‑table or DQN.
+```
+
+
+*Game rules*:
+```
+board.py: Prints the board and checks win/tie.
+```
+
+## How to use main.py - locally
+### Train models (pick any):
+```shell
+python main.py train_q_random
+python main.py train_q_self
+python main.py train_dqn_random
+python main.py train_dqn_self
+```
+### Server the web UI:
+```shell
+python main.py server
+# → http://localhost:5000
 ```

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>RL Tic-Tac-Toe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 520px; margin: 40px auto; }
+    .board { display: grid; grid-template-columns: repeat(3, 120px); gap: 8px; }
+    .cell { width: 120px; height: 120px; font-size: 64px; cursor: pointer;
+            display:flex; align-items:center; justify-content:center;
+            border: 2px solid #444; border-radius: 8px; user-select: none; }
+    .cell.disabled { cursor: not-allowed; color: #aaa; }
+    .topbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .status { margin-top: 16px; font-weight: bold; }
+    button, select { padding: 8px 12px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>Tic-Tac-Toe — Q-Learning & DQN</h2>
+
+  <div class="topbar">
+    <label for="agent">Opponent:</label>
+    <select id="agent">
+      <option value="DQN" {{ 'selected' if agent=='DQN' else '' }}>DQN</option>
+      <option value="Q-Learning" {{ 'selected' if agent=='Q-Learning' else '' }}>Q-Learning</option>
+    </select>
+    <button id="reset">New game</button>
+  </div>
+
+  <div class="board" id="board">
+    {% for i in range(9) %}
+      <div class="cell {% if raw_board[i] != 0 or done %}disabled{% endif %}" data-idx="{{ i }}">
+        {{ board[i] }}
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="status" id="status">{{ msg }}</div>
+
+  <script>
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    const agentSel = document.getElementById('agent');
+    const resetBtn = document.getElementById('reset');
+
+    async function post(url, data) {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(data)
+      });
+      return resp.json();
+    }
+
+    boardEl.addEventListener('click', async (e) => {
+      const cell = e.target.closest('.cell');
+      if (!cell) return;
+      if (cell.classList.contains('disabled')) return;
+
+      const idx = cell.getAttribute('data-idx');
+      const res = await post('/move', { idx });
+
+      if (!res.success) {
+        statusEl.textContent = res.msg || 'Invalid move';
+        return;
+      }
+      // Re-render board
+      const cells = boardEl.querySelectorAll('.cell');
+      res.raw.forEach((v, i) => {
+        cells[i].textContent = (v === 0) ? ' ' : (v === 1 ? 'X' : 'O');
+        if (v !== 0 || res.done) cells[i].classList.add('disabled');
+        else cells[i].classList.remove('disabled');
+      });
+      statusEl.textContent = res.msg || '';
+    });
+
+    agentSel.addEventListener('change', async () => {
+      const res = await post('/set_agent', { agent: agentSel.value });
+      if (res.success) {
+        statusEl.textContent = `Playing vs ${res.agent}. Your turn (X)!`;
+      }
+    });
+
+    resetBtn.addEventListener('click', async () => {
+      const res = await post('/reset', {});
+      if (res.success) {
+        // simple reload to refresh UI
+        window.location.reload();
+      }
+    });
+  </script>
+</body>
+</html>
