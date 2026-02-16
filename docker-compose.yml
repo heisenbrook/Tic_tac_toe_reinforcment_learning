@@ -1,0 +1,68 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ttt-rl-web
+    command: ["python", "main.py", "serve"]
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  # --------  TRAINING SERVICES (run on demand) --------
+  # Run DQN self-play training once to produce artifacts/dqn.pth
+  train-dqn-self:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ttt-rl-train-dqn-self
+    command: ["python", "main.py", "train_dqn_self"]
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    profiles: ["train"]
+    restart: "no"
+
+  # Run Q-learning self-play training once to produce artifacts/Q1.txt
+  train-q-self:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ttt-rl-train-q-self
+    command: ["python", "main.py", "train_q_self"]
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    profiles: ["train"]
+    restart: "no"
+
+  # Run DQN vs Random training once
+  train-dqn-random:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ttt-rl-train-dqn-random
+    command: ["python", "main.py", "train_dqn_random"]
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    profiles: ["train"]
+    restart: "no"
+
+  # Run Q-learning vs Random training once
+  train-q-random:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ttt-rl-train-q-random
+    command: ["python", "main.py", "train_q_random"]
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    profiles: ["train"]
+    restart: "no"

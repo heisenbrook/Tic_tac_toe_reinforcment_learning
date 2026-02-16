@@ -1,5 +1,13 @@
 # play_h_vs_bot.py
 
+"""
+Define a human vs bot game mode for Tic Tac Toe, allowing a human player to compete against
+a trained Q-learning or DQN agent.
+The human player can choose to play against either a Q-table based agent or a DQN-based agent,
+with the game providing feedback on the board state and outcomes after each move.
+"""
+
+# import necessary libraries
 import numpy as np
 from src.board import print_board, check_triplets
 from agents.Q_player import sel_e_greedy_action

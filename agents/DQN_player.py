@@ -1,6 +1,10 @@
-#dqn_player.py
+# DQN_player.py
+"""
+Deep Q-Network implementation for Tic Tac Toe
+This module defines a DQN architecture and associated functions 
+for action selection and model updates.
+"""
 
-# Deep Q-Network implementation for Tic Tac Toe
 
 #import necessary libraries
 import torch
@@ -50,38 +54,77 @@ def hard_update_target():
     target_model.eval()
 
 
-def select_action(state, epsilon):
+def available_actions(state):
+    s = np.array(state)
+    return np.where(s == 0)[0]  # integer indices
+
+
+def select_action(state, epsilon, mask_illegal=True):
+    """
+    Epsilon-greedy action selection constrained to empty cells.
+    Returns an int action in [0..8].
+    """
+    avail = available_actions(state)
+    if len(avail) == 0:
+        return None  # board full
 
     if np.random.rand() < epsilon:
-        return int(random.choice(state))
-    else:
-        q_val = model(torch.tensor(state, dtype=torch.float32).to(device))
-        return torch.argmax(q_val).item()
+        return int(np.random.choice(avail))
 
-def update_model(memory, batch_size, gamma = 0.7):
+    with torch.no_grad():
+        q = model(torch.tensor(state, dtype=torch.float32).to(device))
+        if q.ndim > 1:  # ensure 1D
+            q = q.squeeze(0)
+        if mask_illegal:
+            mask = torch.full_like(q, float('-inf'))
+            mask[torch.tensor(avail, device=q.device)] = 0.0
+            q = q + mask
+        return int(torch.argmax(q).item())
+
+def update_model(memory, batch_size, gamma=0.7):
     """
-    Update the DQN model using experiences sampled from the replay memory.
+    Sample from replay memory and do one-step TD update.
     """
     exp = random.sample(memory, batch_size)
+
     for state, action, reward, next_state, done in exp:
-        # Compute target Q value
+        # Prepare tensors
+        state_t = torch.tensor(state, dtype=torch.float32).to(device)
+        q_current = model(state_t)
+
+        # Compute target for the taken action only
+        target_vec = q_current.clone().detach()
+
         if done:
-            target = reward
+            target_value = reward
         else:
             with torch.no_grad():
-                next_q = target_model(torch.tensor(next_state, dtype=torch.float32).to(device))
-                target = reward + gamma * torch.max(next_q).item()
+                next_state_t = torch.tensor(next_state, dtype=torch.float32).to(device)
+                q_next = target_model(next_state_t)
+                if q_next.ndim > 1:
+                    q_next = q_next.squeeze(0)
+                # mask illegal actions in next_state
+                avail_next = np.where(np.array(next_state) == 0)[0]
+                if len(avail_next) == 0:
+                    max_next = 0.0
+                else:
+                    mask = torch.full_like(q_next, float('-inf'))
+                    mask[torch.tensor(avail_next, device=q_next.device)] = 0.0
+                    max_next = torch.max(q_next + mask).item()
+                target_value = reward + gamma * max_next
 
-        # Current Q value 
-        state_tensor = torch.tensor(state, dtype=torch.float32).to(device)
-        q_current = model(state_tensor)
-
-        target_vec = q_current.clone().detach() 
-        # Update only the taken action
-        a = int(action) if not isinstance(action, (np.ndarray, list)) else int(np.array(action).item())
-        target_vec[a] = target
+        a = int(action)
+        target_vec[a] = target_value
 
         optimizer.zero_grad()
-        loss = loss_fn(model(state_tensor), target_vec)
+        loss = loss_fn(model(state_t), target_vec)
         loss.backward()
         optimizer.step()
+
+def save_model(path:str):
+    torch.save(model.state_dict(), path)
+
+def load_model(path:str):
+    state = torch.load(path, map_location=device)
+    model.load_state_dict(state)
+    model.eval()
